@@ -552,10 +552,26 @@
             ohp: 0,
             pulldown: 0
         };
+        
+        // Fix 1: Add a state to track completed sets and AMRAP reps
+        let workoutData = {
+            week1: { bench: {}, row: {}, ohp: {}, pulldown: {} },
+            week2: { bench: {}, row: {}, ohp: {}, pulldown: {} },
+            week3: { bench: {}, row: {}, ohp: {}, pulldown: {} }
+        };
+        
+        // Fix 2: Add a state to track completed sets
+        let completedSets = {
+            week1: {},
+            week2: {},
+            week3: {}
+        };
 
         // Initialize the app
         function init() {
             loadTrainingMaxes();
+            loadWorkoutData();
+            loadCompletedSets();
             setupEventListeners();
             updateWorkoutDisplay();
             checkOnlineStatus();
@@ -583,6 +599,22 @@
                 pulldownMaxInput.value = trainingMaxes.pulldown;
             }
         }
+        
+        // Fix 3: Load workout data from localStorage
+        function loadWorkoutData() {
+            const savedWorkoutData = localStorage.getItem('531_workoutData');
+            if (savedWorkoutData) {
+                workoutData = JSON.parse(savedWorkoutData);
+            }
+        }
+        
+        // Fix 4: Load completed sets from localStorage
+        function loadCompletedSets() {
+            const savedCompletedSets = localStorage.getItem('531_completedSets');
+            if (savedCompletedSets) {
+                completedSets = JSON.parse(savedCompletedSets);
+            }
+        }
 
         // Save training maxes to localStorage
         function saveTrainingMaxes() {
@@ -594,6 +626,16 @@
             };
             localStorage.setItem('531_trainingMaxes', JSON.stringify(trainingMaxes));
             updateWorkoutDisplay();
+        }
+        
+        // Fix 5: Save workout data to localStorage
+        function saveWorkoutData() {
+            localStorage.setItem('531_workoutData', JSON.stringify(workoutData));
+        }
+        
+        // Fix 6: Save completed sets to localStorage
+        function saveCompletedSets() {
+            localStorage.setItem('531_completedSets', JSON.stringify(completedSets));
         }
 
         // Set up event listeners
@@ -668,6 +710,16 @@
                 { percentage: 70, reps: 10, amrap: false }
             ];
         }
+        
+        // Get week key for data storage
+        function getWeekKey(week) {
+            return `week${week}`;
+        }
+        
+        // Fix 7: Get data key for set
+        function getDataKey(percentage) {
+            return `set_${percentage}`;
+        }
 
         // Update exercise table display
         function updateExerciseDisplay(tableId, exercise, sets, isT1) {
@@ -675,10 +727,19 @@
             tableBody.innerHTML = '';
             
             const tm = trainingMaxes[exercise];
+            const weekKey = getWeekKey(currentWeek);
             
             sets.forEach((set, index) => {
                 const weight = Math.round(tm * set.percentage / 100 / 5) * 5; // Round to nearest 5 lbs
                 const repsDisplay = set.repsDisplay || set.reps;
+                const dataKey = getDataKey(set.percentage);
+                
+                // Fix 8: Get saved rep count for AMRAP sets
+                const savedReps = workoutData[weekKey][exercise][dataKey] || '';
+                
+                // Fix 9: Get completed status for non-AMRAP sets
+                const completedKey = `${exercise}_${dataKey}`;
+                const isCompleted = completedSets[weekKey][completedKey] || false;
                 
                 const row = document.createElement('tr');
                 
@@ -690,9 +751,12 @@
                     <td>
                         ${set.amrap ? `
                             <input type="number" min="1" max="20" placeholder="Actual reps" class="amrap-input" 
-                                   data-exercise="${exercise}" data-percentage="${set.percentage}" data-week="${currentWeek}">
+                                   data-exercise="${exercise}" data-percentage="${set.percentage}" data-week="${currentWeek}"
+                                   value="${savedReps}">
                         ` : `
-                            <input type="checkbox" class="set-completed">
+                            <input type="checkbox" class="set-completed" data-exercise="${exercise}" 
+                                   data-percentage="${set.percentage}" data-week="${currentWeek}" 
+                                   ${isCompleted ? 'checked' : ''}>
                         `}
                     </td>
                 `;
@@ -713,13 +777,33 @@
                 input.addEventListener('change', (e) => {
                     const reps = parseInt(e.target.value);
                     if (reps && !isNaN(reps)) {
-                        handleAmrapSet(
-                            e.target.dataset.exercise, 
-                            parseInt(e.target.dataset.percentage), 
-                            reps,
-                            parseInt(e.target.dataset.week)
-                        );
+                        // Fix 10: Save AMRAP reps
+                        const exercise = e.target.dataset.exercise;
+                        const percentage = parseInt(e.target.dataset.percentage);
+                        const week = parseInt(e.target.dataset.week);
+                        const weekKey = getWeekKey(week);
+                        const dataKey = getDataKey(percentage);
+                        
+                        workoutData[weekKey][exercise][dataKey] = reps;
+                        saveWorkoutData();
+                        
+                        handleAmrapSet(exercise, percentage, reps, week);
                     }
+                });
+            });
+            
+            // Fix 11: Add event listeners to completed checkboxes
+            document.querySelectorAll(`#${tableId} .set-completed`).forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const exercise = e.target.dataset.exercise;
+                    const percentage = parseInt(e.target.dataset.percentage);
+                    const week = parseInt(e.target.dataset.week);
+                    const weekKey = getWeekKey(week);
+                    const dataKey = getDataKey(percentage);
+                    const completedKey = `${exercise}_${dataKey}`;
+                    
+                    completedSets[weekKey][completedKey] = e.target.checked;
+                    saveCompletedSets();
                 });
             });
         }
@@ -778,16 +862,16 @@
                 // Add to PR history
                 addPRToHistory(exercise, percentage, reps, change);
                 
-                // Update workout display
-                updateWorkoutDisplay();
-                
-                // Show celebration
+                // Fix 12: Show celebration on correct cell
                 const input = document.querySelector(`.amrap-input[data-exercise="${exercise}"][data-percentage="${percentage}"][data-week="${week}"]`);
                 if (input) {
-                    input.parentElement.parentElement.classList.add('celebrate');
-                    setTimeout(() => {
-                        input.parentElement.parentElement.classList.remove('celebrate');
-                    }, 1000);
+                    const row = input.closest('tr');
+                    if (row) {
+                        row.classList.add('celebrate');
+                        setTimeout(() => {
+                            row.classList.remove('celebrate');
+                        }, 1000);
+                    }
                 }
                 
                 alert(prText);
@@ -796,7 +880,14 @@
 
         // Add PR to history
         function addPRToHistory(exercise, percentage, reps, change) {
-            const prs = JSON.parse(localStorage.getItem('531_prHistory') || []);
+            // Fix 13: Properly initialize PR history
+            let prs = [];
+            try {
+                const savedPrs = localStorage.getItem('531_prHistory');
+                prs = savedPrs ? JSON.parse(savedPrs) : [];
+            } catch (e) {
+                prs = [];
+            }
             
             const exerciseNames = {
                 bench: 'Bench Press',
@@ -821,7 +912,14 @@
 
         // Update PR history display
         function updatePRHistory() {
-            const prs = JSON.parse(localStorage.getItem('531_prHistory') || []);
+            // Fix 14: Properly retrieve PR history
+            let prs = [];
+            try {
+                const savedPrs = localStorage.getItem('531_prHistory');
+                prs = savedPrs ? JSON.parse(savedPrs) : [];
+            } catch (e) {
+                prs = [];
+            }
             
             if (prs.length === 0) {
                 prHistory.innerHTML = '<p>No PRs recorded yet. Complete some AMRAP sets to track your progress!</p>';
