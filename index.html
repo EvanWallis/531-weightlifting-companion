@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5/3/1 Weightlifting Companion</title>
+    <meta name="description" content="A specialized training tool for serious weightlifters following the 5/3/1 methodology">
+    <meta name="theme-color" content="#1a237e">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --primary-light: #534bae;
+            --primary-dark: #000051;
+            --secondary-color: #ffab00;
+            --secondary-light: #ffdd4b;
+            --secondary-dark: #c67c00;
+            --text-light: #f5f5f5;
+            --text-dark: #212121;
+            --background: #f5f5f5;
+            --surface: #ffffff;
+            --error: #b00020;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--primary-light);
+        }
+
+        button.secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-dark);
+        }
+
+        button.secondary:hover {
+            background-color: var(--secondary-light);
+        }
+
+        .workout-day {
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .week-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .week-btn {
+            margin: 0 0.5rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .week-btn.active {
+            background-color: var(--secondary-color);
+            color: var(--text-dark);
+        }
+
+        .plate-calculator {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--surface);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 90%;
+        }
+
+        .plate-calculator.active {
+            display: block;
+        }
+
+        .plate-calculator h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .plates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .plate {
+            background-color: var(--primary-light);
+            color: var(--text-light);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .close-plate-calc {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        .rest-timer {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--surface);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .rest-timer.active {
+            display: block;
+        }
+
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+            color: var(--primary-color);
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .pr-history {
+            margin-top: 2rem;
+        }
+
+        .pr-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .pr-item:last-child {
+            border-bottom: none;
+        }
+
+        .pr-date {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .pr-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+        }
+
+        .pr-change.increase {
+            color: #2e7d32;
+        }
+
+        .pr-change.decrease {
+            color: var(--error);
+        }
+
+        .offline-notice {
+            display: none;
+            background-color: var(--error);
+            color: var(--text-light);
+            padding: 0.5rem;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .offline-notice.active {
+            display: block;
+        }
+
+        .tap-hint {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            .week-btn {
+                padding: 0.5rem;
+                margin: 0 0.25rem;
+            }
+        }
+
+        /* Animation for PR celebration */
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .celebrate {
+            animation: celebrate 0.5s ease;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>5/3/1 Weightlifting Companion</h1>
+    </header>
+
+    <div class="container">
+        <div class="offline-notice" id="offlineNotice">You are currently offline. All features remain available.</div>
+
+        <div class="card" id="maxInputCard">
+            <h2 class="card-title">Training Maxes</h2>
+            <div class="form-group">
+                <label for="benchMax">Bench Press (lbs)</label>
+                <input type="number" id="benchMax" min="0" step="5">
+            </div>
+            <div class="form-group">
+                <label for="rowMax">Barbell Row (lbs)</label>
+                <input type="number" id="rowMax" min="0" step="5">
+            </div>
+            <div class="form-group">
+                <label for="ohpMax">Overhead Press (lbs)</label>
+                <input type="number" id="ohpMax" min="0" step="5">
+            </div>
+            <div class="form-group">
+                <label for="pulldownMax">Lat Pulldown (lbs)</label>
+                <input type="number" id="pulldownMax" min="0" step="5">
+            </div>
+            <button id="saveMaxes">Save Maxes</button>
+        </div>
+
+        <div class="week-selector">
+            <button class="week-btn" data-week="1">Week 1</button>
+            <button class="week-btn" data-week="2">Week 2</button>
+            <button class="week-btn active" data-week="3">Week 3</button>
+        </div>
+
+        <div class="workout-day" id="day1">
+            <div class="card">
+                <h2 class="card-title">Day 1: Bench Press (T1) + Overhead Press (T2)</h2>
+                
+                <h3>Bench Press (T1)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Set</th>
+                            <th>% of TM</th>
+                            <th>Weight (lbs)</th>
+                            <th>Reps</th>
+                            <th>Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchPressSets">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+
+                <h3>Overhead Press (T2)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Set</th>
+                            <th>% of TM</th>
+                            <th>Weight (lbs)</th>
+                            <th>Reps</th>
+                            <th>Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ohpSets">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+
+                <button class="secondary rest-timer-btn" data-time="90">Start Rest Timer (90s)</button>
+            </div>
+        </div>
+
+        <div class="workout-day" id="day2">
+            <div class="card">
+                <h2 class="card-title">Day 2: Barbell Row (T1)</h2>
+                
+                <h3>Barbell Row (T1)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Set</th>
+                            <th>% of TM</th>
+                            <th>Weight (lbs)</th>
+                            <th>Reps</th>
+                            <th>Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rowSets">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+
+                <button class="secondary rest-timer-btn" data-time="90">Start Rest Timer (90s)</button>
+            </div>
+        </div>
+
+        <div class="workout-day" id="day3">
+            <div class="card">
+                <h2 class="card-title">Day 3: Overhead Press (T1) + Incline Bench (T2)</h2>
+                
+                <h3>Overhead Press (T1)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Set</th>
+                            <th>% of TM</th>
+                            <th>Weight (lbs)</th>
+                            <th>Reps</th>
+                            <th>Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ohpT1Sets">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+
+                <h3>Incline Bench Press (T2)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Set</th>
+                            <th>% of TM</th>
+                            <th>Weight (lbs)</th>
+                            <th>Reps</th>
+                            <th>Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inclineBenchSets">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+
+                <button class="secondary rest-timer-btn" data-time="90">Start Rest Timer (90s)</button>
+            </div>
+        </div>
+
+        <div class="workout-day" id="day4">
+            <div class="card">
+                <h2 class="card-title">Day 4: Lat Pulldown (T1)</h2>
+                
+                <h3>Lat Pulldown (T1)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Set</th>
+                            <th>% of TM</th>
+                            <th>Weight (lbs)</th>
+                            <th>Reps</th>
+                            <th>Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pulldownSets">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+
+                <button class="secondary rest-timer-btn" data-time="90">Start Rest Timer (90s)</button>
+            </div>
+        </div>
+
+        <div class="card pr-history">
+            <h2 class="card-title">PR History</h2>
+            <div id="prHistory">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Plate Calculator Modal -->
+    <div class="plate-calculator" id="plateCalculator">
+        <button class="close-plate-calc" id="closePlateCalc">&times;</button>
+        <h3>Plate Calculator</h3>
+        <p id="plateCalcWeight">Weight: 0 lbs</p>
+        <p>Plates per side (45lb bar):</p>
+        <div class="plates" id="plateList">
+            <!-- Will be populated by JavaScript -->
+        </div>
+        <p class="tap-hint">Tap plates to remove them</p>
+    </div>
+
+    <!-- Rest Timer Modal -->
+    <div class="rest-timer" id="restTimer">
+        <h3>Rest Timer</h3>
+        <div class="timer-display" id="timerDisplay">90</div>
+        <div class="timer-controls">
+            <button class="secondary" id="timer60">60s</button>
+            <button class="secondary" id="timer90">90s</button>
+            <button class="secondary" id="timer120">120s</button>
+        </div>
+        <button id="stopTimer">Stop Timer</button>
+    </div>
+
+    <script>
+        // DOM Elements
+        const benchMaxInput = document.getElementById('benchMax');
+        const rowMaxInput = document.getElementById('rowMax');
+        const ohpMaxInput = document.getElementById('ohpMax');
+        const pulldownMaxInput = document.getElementById('pulldownMax');
+        const saveMaxesBtn = document.getElementById('saveMaxes');
+        const weekBtns = document.querySelectorAll('.week-btn');
+        const plateCalculator = document.getElementById('plateCalculator');
+        const closePlateCalc = document.getElementById('closePlateCalc');
+        const plateCalcWeight = document.getElementById('plateCalcWeight');
+        const plateList = document.getElementById('plateList');
+        const restTimer = document.getElementById('restTimer');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timer60 = document.getElementById('timer60');
+        const timer90 = document.getElementById('timer90');
+        const timer120 = document.getElementById('timer120');
+        const stopTimer = document.getElementById('stopTimer');
+        const restTimerBtns = document.querySelectorAll('.rest-timer-btn');
+        const prHistory = document.getElementById('prHistory');
+        const offlineNotice = document.getElementById('offlineNotice');
+
+        // State
+        let currentWeek = 3;
+        let timerInterval;
+        let currentTimerSeconds = 90;
+        let trainingMaxes = {
+            bench: 0,
+            row: 0,
+            ohp: 0,
+            pulldown: 0
+        };
+
+        // Initialize the app
+        function init() {
+            loadTrainingMaxes();
+            setupEventListeners();
+            updateWorkoutDisplay();
+            checkOnlineStatus();
+            window.addEventListener('online', checkOnlineStatus);
+            window.addEventListener('offline', checkOnlineStatus);
+        }
+
+        // Check online status
+        function checkOnlineStatus() {
+            if (navigator.onLine) {
+                offlineNotice.classList.remove('active');
+            } else {
+                offlineNotice.classList.add('active');
+            }
+        }
+
+        // Load training maxes from localStorage
+        function loadTrainingMaxes() {
+            const savedMaxes = localStorage.getItem('531_trainingMaxes');
+            if (savedMaxes) {
+                trainingMaxes = JSON.parse(savedMaxes);
+                benchMaxInput.value = trainingMaxes.bench;
+                rowMaxInput.value = trainingMaxes.row;
+                ohpMaxInput.value = trainingMaxes.ohp;
+                pulldownMaxInput.value = trainingMaxes.pulldown;
+            }
+        }
+
+        // Save training maxes to localStorage
+        function saveTrainingMaxes() {
+            trainingMaxes = {
+                bench: parseInt(benchMaxInput.value) || 0,
+                row: parseInt(rowMaxInput.value) || 0,
+                ohp: parseInt(ohpMaxInput.value) || 0,
+                pulldown: parseInt(pulldownMaxInput.value) || 0
+            };
+            localStorage.setItem('531_trainingMaxes', JSON.stringify(trainingMaxes));
+            updateWorkoutDisplay();
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            saveMaxesBtn.addEventListener('click', saveTrainingMaxes);
+            
+            weekBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    weekBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentWeek = parseInt(btn.dataset.week);
+                    updateWorkoutDisplay();
+                });
+            });
+
+            closePlateCalc.addEventListener('click', () => {
+                plateCalculator.classList.remove('active');
+            });
+
+            timer60.addEventListener('click', () => startTimer(60));
+            timer90.addEventListener('click', () => startTimer(90));
+            timer120.addEventListener('click', () => startTimer(120));
+            stopTimer.addEventListener('click', stopTimerFunc);
+
+            restTimerBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const time = parseInt(btn.dataset.time);
+                    startTimer(time);
+                });
+            });
+        }
+
+        // Update workout display based on current week and training maxes
+        function updateWorkoutDisplay() {
+            updateExerciseDisplay('benchPressSets', 'bench', getT1Sets(currentWeek), true);
+            updateExerciseDisplay('ohpSets', 'ohp', getT2Sets(currentWeek), false);
+            updateExerciseDisplay('rowSets', 'row', getT1Sets(currentWeek), true);
+            updateExerciseDisplay('ohpT1Sets', 'ohp', getT1Sets(currentWeek), true);
+            updateExerciseDisplay('inclineBenchSets', 'bench', getT2Sets(currentWeek), false);
+            updateExerciseDisplay('pulldownSets', 'pulldown', getT1Sets(currentWeek), true);
+            updatePRHistory();
+        }
+
+        // Get sets for T1 exercises based on week
+        function getT1Sets(week) {
+            if (week === 1) {
+                return [
+                    { percentage: 65, reps: 5, amrap: false },
+                    { percentage: 75, reps: 5, amrap: false },
+                    { percentage: 85, reps: 5, amrap: true }
+                ];
+            } else if (week === 2) {
+                return [
+                    { percentage: 70, reps: 3, amrap: false },
+                    { percentage: 80, reps: 3, amrap: false },
+                    { percentage: 90, reps: 3, amrap: true }
+                ];
+            } else { // week 3
+                return [
+                    { percentage: 75, reps: 5, amrap: false },
+                    { percentage: 85, reps: 3, amrap: false },
+                    { percentage: 95, reps: 1, repsDisplay: '1+', amrap: true }
+                ];
+            }
+        }
+
+        // Get sets for T2 exercises
+        function getT2Sets() {
+            return [
+                { percentage: 50, reps: 10, amrap: false },
+                { percentage: 60, reps: 10, amrap: false },
+                { percentage: 70, reps: 10, amrap: false }
+            ];
+        }
+
+        // Update exercise table display
+        function updateExerciseDisplay(tableId, exercise, sets, isT1) {
+            const tableBody = document.getElementById(tableId);
+            tableBody.innerHTML = '';
+            
+            const tm = trainingMaxes[exercise];
+            
+            sets.forEach((set, index) => {
+                const weight = Math.round(tm * set.percentage / 100 / 5) * 5; // Round to nearest 5 lbs
+                const repsDisplay = set.repsDisplay || set.reps;
+                
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${set.percentage}%</td>
+                    <td class="weight-cell" data-weight="${weight}">${weight}</td>
+                    <td>${repsDisplay}</td>
+                    <td>
+                        ${set.amrap ? `
+                            <input type="number" min="1" max="20" placeholder="Actual reps" class="amrap-input" 
+                                   data-exercise="${exercise}" data-percentage="${set.percentage}" data-week="${currentWeek}">
+                        ` : `
+                            <input type="checkbox" class="set-completed">
+                        `}
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to weight cells
+            document.querySelectorAll(`#${tableId} .weight-cell`).forEach(cell => {
+                cell.addEventListener('click', (e) => {
+                    const weight = parseInt(cell.dataset.weight);
+                    showPlateCalculator(weight);
+                });
+            });
+            
+            // Add event listeners to AMRAP inputs
+            document.querySelectorAll(`#${tableId} .amrap-input`).forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const reps = parseInt(e.target.value);
+                    if (reps && !isNaN(reps)) {
+                        handleAmrapSet(
+                            e.target.dataset.exercise, 
+                            parseInt(e.target.dataset.percentage), 
+                            reps,
+                            parseInt(e.target.dataset.week)
+                        );
+                    }
+                });
+            });
+        }
+
+        // Handle AMRAP set completion
+        function handleAmrapSet(exercise, percentage, reps, week) {
+            let change = 0;
+            let prText = '';
+            
+            if (week === 3 && percentage === 95) {
+                // Week 3, 95% set
+                if (reps >= 3) {
+                    change = 10;
+                    prText = `Great work! Increased ${exercise} TM by 10lbs.`;
+                } else if (reps === 2) {
+                    change = 5;
+                    prText = `Good effort. Increased ${exercise} TM by 5lbs.`;
+                } else {
+                    prText = `Keep working! No change to ${exercise} TM.`;
+                }
+            } else if (week === 2 && percentage === 90) {
+                // Week 2, 90% set
+                if (reps >= 5) {
+                    change = 10;
+                    prText = `Great work! Increased ${exercise} TM by 10lbs.`;
+                } else if (reps >= 3) {
+                    change = 5;
+                    prText = `Good effort. Increased ${exercise} TM by 5lbs.`;
+                } else {
+                    prText = `Keep working! No change to ${exercise} TM.`;
+                }
+            } else if (week === 1 && percentage === 85) {
+                // Week 1, 85% set
+                if (reps >= 7) {
+                    change = 10;
+                    prText = `Great work! Increased ${exercise} TM by 10lbs.`;
+                } else if (reps >= 5) {
+                    change = 5;
+                    prText = `Good effort. Increased ${exercise} TM by 5lbs.`;
+                } else {
+                    prText = `Keep working! No change to ${exercise} TM.`;
+                }
+            }
+            
+            if (change > 0) {
+                // Update training max
+                trainingMaxes[exercise] += change;
+                localStorage.setItem('531_trainingMaxes', JSON.stringify(trainingMaxes));
+                
+                // Update input fields
+                if (exercise === 'bench') benchMaxInput.value = trainingMaxes.bench;
+                if (exercise === 'row') rowMaxInput.value = trainingMaxes.row;
+                if (exercise === 'ohp') ohpMaxInput.value = trainingMaxes.ohp;
+                if (exercise === 'pulldown') pulldownMaxInput.value = trainingMaxes.pulldown;
+                
+                // Add to PR history
+                addPRToHistory(exercise, percentage, reps, change);
+                
+                // Update workout display
+                updateWorkoutDisplay();
+                
+                // Show celebration
+                const input = document.querySelector(`.amrap-input[data-exercise="${exercise}"][data-percentage="${percentage}"][data-week="${week}"]`);
+                if (input) {
+                    input.parentElement.parentElement.classList.add('celebrate');
+                    setTimeout(() => {
+                        input.parentElement.parentElement.classList.remove('celebrate');
+                    }, 1000);
+                }
+                
+                alert(prText);
+            }
+        }
+
+        // Add PR to history
+        function addPRToHistory(exercise, percentage, reps, change) {
+            const prs = JSON.parse(localStorage.getItem('531_prHistory') || []);
+            
+            const exerciseNames = {
+                bench: 'Bench Press',
+                row: 'Barbell Row',
+                ohp: 'Overhead Press',
+                pulldown: 'Lat Pulldown'
+            };
+            
+            const newPR = {
+                date: new Date().toLocaleDateString(),
+                exercise: exerciseNames[exercise],
+                percentage: percentage,
+                reps: reps,
+                change: change
+            };
+            
+            prs.unshift(newPR);
+            localStorage.setItem('531_prHistory', JSON.stringify(prs));
+            
+            updatePRHistory();
+        }
+
+        // Update PR history display
+        function updatePRHistory() {
+            const prs = JSON.parse(localStorage.getItem('531_prHistory') || []);
+            
+            if (prs.length === 0) {
+                prHistory.innerHTML = '<p>No PRs recorded yet. Complete some AMRAP sets to track your progress!</p>';
+                return;
+            }
+            
+            prHistory.innerHTML = '';
+            
+            prs.forEach(pr => {
+                const prItem = document.createElement('div');
+                prItem.className = 'pr-item';
+                
+                prItem.innerHTML = `
+                    <div class="pr-date">${pr.date}</div>
+                    <div class="pr-details">
+                        <span>${pr.exercise} - ${pr.reps} reps @ ${pr.percentage}%</span>
+                        <span class="pr-change ${pr.change > 0 ? 'increase' : ''}">
+                            ${pr.change > 0 ? `+${pr.change}lbs` : ''}
+                        </span>
+                    </div>
+                `;
+                
+                prHistory.appendChild(prItem);
+            });
+        }
+
+        // Show plate calculator
+        function showPlateCalculator(weight) {
+            if (weight < 45) {
+                alert('Weight must be at least 45lbs (bar weight)');
+                return;
+            }
+            
+            plateCalcWeight.textContent = `Weight: ${weight} lbs`;
+            plateList.innerHTML = '';
+            
+            const plates = calculatePlates(weight);
+            
+            plates.forEach(plate => {
+                const plateElement = document.createElement('div');
+                plateElement.className = 'plate';
+                plateElement.textContent = plate;
+                plateElement.addEventListener('click', () => {
+                    plateElement.remove();
+                });
+                plateList.appendChild(plateElement);
+            });
+            
+            plateCalculator.classList.add('active');
+        }
+
+        // Calculate plates needed for a given weight
+        function calculatePlates(weight) {
+            let remaining = (weight - 45) / 2; // Subtract bar weight and divide by 2 (per side)
+            const availablePlates = [45, 25, 10, 5, 2.5];
+            const plates = [];
+            
+            availablePlates.forEach(plate => {
+                while (remaining >= plate) {
+                    plates.push(plate);
+                    remaining -= plate;
+                }
+            });
+            
+            return plates;
+        }
+
+        // Start rest timer
+        function startTimer(seconds) {
+            stopTimerFunc();
+            currentTimerSeconds = seconds;
+            timerDisplay.textContent = currentTimerSeconds;
+            restTimer.classList.add('active');
+            
+            timerInterval = setInterval(() => {
+                currentTimerSeconds--;
+                timerDisplay.textContent = currentTimerSeconds;
+                
+                if (currentTimerSeconds <= 0) {
+                    stopTimerFunc();
+                    alert('Time is up! Start your next set.');
+                }
+            }, 1000);
+        }
+
+        // Stop rest timer
+        function stopTimerFunc() {
+            clearInterval(timerInterval);
+            restTimer.classList.remove('active');
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Service Worker Registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful');
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+
+    <!-- Manifest for PWA -->
+    <script type="application/manifest+json" id="manifest">
+        {
+            "name": "5/3/1 Weightlifting Companion",
+            "short_name": "5/3/1 App",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#1a237e",
+            "description": "A specialized training tool for serious weightlifters following the 5/3/1 methodology",
+            "icons": [
+                {
+                    "src": "icons/icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-512x512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        }
+    </script>
+
+    <!-- Create the manifest file dynamically -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const manifestContent = document.getElementById('manifest').textContent;
+            const blob = new Blob([manifestContent], { type: 'application/json' });
+            const manifestURL = URL.createObjectURL(blob);
+            
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestURL;
+            document.head.appendChild(link);
+        });
+    </script>
+
+    <!-- Service Worker script (inline) -->
+    <script id="sw-script">
+        // This will be written to sw.js
+        const swContent = `
+            const CACHE_NAME = '531-companion-v1';
+            const urlsToCache = [
+                '/',
+                '/index.html',
+                '/styles.css',
+                '/app.js',
+                '/icons/icon-192x192.png',
+                '/icons/icon-512x512.png'
+            ];
+
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            return cache.addAll(urlsToCache);
+                        })
+                );
+            });
+
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request)
+                        .then(response => {
+                            return response || fetch(event.request);
+                        })
+                );
+            });
+        `;
+
+        // Create the service worker file dynamically
+        if ('serviceWorker' in navigator) {
+            const blob = new Blob([swContent], { type: 'application/javascript' });
+            const swURL = URL.createObjectURL(blob);
+            
+            // Register the service worker
+            navigator.serviceWorker.register(swURL)
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+    </script>
+</body>
+</html>
